@@ -417,8 +417,22 @@ a { color: inherit; }
 
   /* Staggered so the three read as a sequence rather than one block flip. */
   .door[data-risen] .door__flood { transform: scaleY(1); }
-  .door[data-risen] { color: var(--on-accent); border-color: var(--accent); }
   .door[data-risen]::after { opacity: 0; }
+
+  /* The text has to be repainted for the accent it now sits on, and named on
+     the children rather than left to inherit: measured on the live site, the
+     name stayed near-white over the yellow flood at 1.47:1, which is not
+     readable by anyone. Dark on yellow takes it to about 12:1, and the other
+     two doors carry white above 4:1 against large type. */
+  .door[data-risen],
+  .door[data-risen] .door__name,
+  .door[data-risen] .door__meta {
+    color: var(--on-accent);
+    border-color: var(--accent);
+  }
+  /* The resting meta is dimmed to 0.72, which costs contrast it cannot spare
+     once there is a saturated colour underneath. */
+  .door[data-risen] .door__meta { opacity: 1; }
   .door--music[data-risen]  .door__flood { transition-delay: 0ms; }
   .door--art[data-risen]    .door__flood { transition-delay: 110ms; }
   .door--events[data-risen] .door__flood { transition-delay: 220ms; }
