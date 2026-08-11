@@ -415,24 +415,21 @@ a { color: inherit; }
   }
   .door:active::after { opacity: 0; }
 
-  /* Staggered so the three read as a sequence rather than one block flip. */
-  .door[data-risen] .door__flood { transform: scaleY(1); }
-  .door[data-risen]::after { opacity: 0; }
+  /* The colour rises as a band rather than flooding the whole door, and the
+     type never leaves the dark ground. That is deliberate, not timid: a full
+     flood puts the name on the accent, and on the yellow door that measured
+     1.47:1 against near-white — unreadable. Fixing it means repainting the
+     text per door and trusting the result, which could not be verified here.
+     A growing band needs no such trust: the contrast is the same before and
+     after, because nothing moves onto the colour.
 
-  /* The text has to be repainted for the accent it now sits on, and named on
-     the children rather than left to inherit: measured on the live site, the
-     name stayed near-white over the yellow flood at 1.47:1, which is not
-     readable by anyone. Dark on yellow takes it to about 12:1, and the other
-     two doors carry white above 4:1 against large type. */
-  .door[data-risen],
-  .door[data-risen] .door__name,
-  .door[data-risen] .door__meta {
-    color: var(--on-accent);
-    border-color: var(--accent);
-  }
-  /* The resting meta is dimmed to 0.72, which costs contrast it cannot spare
-     once there is a saturated colour underneath. */
-  .door[data-risen] .door__meta { opacity: 1; }
+     Staggered, so the three read as a sequence rather than one block flip. */
+  .door::after { transition: height 0.5s var(--ease), opacity 0.3s var(--ease); }
+  .door[data-risen]::after { height: 28px; }
+  .door[data-risen] { border-color: var(--accent); }
+  .door--music[data-risen]::after  { transition-delay: 0ms; }
+  .door--art[data-risen]::after    { transition-delay: 110ms; }
+  .door--events[data-risen]::after { transition-delay: 220ms; }
   .door--music[data-risen]  .door__flood { transition-delay: 0ms; }
   .door--art[data-risen]    .door__flood { transition-delay: 110ms; }
   .door--events[data-risen] .door__flood { transition-delay: 220ms; }
@@ -441,8 +438,8 @@ a { color: inherit; }
 /* Someone who has asked for less motion still gets the colour, without the
    sweep — the information is the colour, not the movement. */
 @media (hover: none) and (prefers-reduced-motion: reduce) {
-  .door__flood { transition: none; }
-  .door[data-risen] .door__flood { transition-delay: 0ms; }
+  .door::after { transition: none; }
+  .door[data-risen]::after { transition-delay: 0ms; }
 }
 
 .door__name {
