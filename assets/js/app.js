@@ -334,21 +334,18 @@ async function loadReleases() {
 function doors() {
   if (!window.matchMedia?.('(hover: none)').matches) return;
   const list = $$('.door');
-  if (!list.length || !('IntersectionObserver' in window)) {
-    // No observer: show the colour rather than withhold it.
-    for (const d of list) d.dataset.risen = '';
-    return;
-  }
+  if (!list.length) return;
 
-  const io = new IntersectionObserver((entries) => {
-    for (const e of entries) {
-      if (!e.isIntersecting) continue;
-      e.target.dataset.risen = '';
-      io.unobserve(e.target);   // rises once; it is not a scroll toy
-    }
-  }, { threshold: 0.35 });
+  // No IntersectionObserver here on purpose. The doors sit in the gateway,
+  // which is the first full screen, so they are already in view on load —
+  // scroll detection would add a dependency and buy nothing. The stagger is
+  // in the CSS, so one flag on each is all this needs.
+  const rise = () => { for (const d of list) d.dataset.risen = ''; };
 
-  for (const d of list) io.observe(d);
+  // A beat after paint, so the rise reads as a movement rather than as the
+  // colour simply having always been there.
+  if (document.readyState === 'complete') setTimeout(rise, 350);
+  else window.addEventListener('load', () => setTimeout(rise, 350), { once: true });
 }
 
 /* ── Image viewer ─────────────────────────────────────────── */
