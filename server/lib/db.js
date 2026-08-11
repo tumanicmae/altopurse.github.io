@@ -104,12 +104,16 @@ export async function listOrders({ limit = 50 } = {}) {
 /* ── Reports: bugs and feature requests from the team ─────── */
 
 /**
- * A screenshot is stored as a data URL on the document itself rather than in
+ * Pictures are stored as data URLs on the document itself rather than in
  * Firebase Storage. Storage would mean another product to configure, another
  * set of rules to get wrong, and signed URLs to manage — for a handful of
  * screenshots between two people. A Firestore document caps at 1 MB, so the
  * browser resizes and re-encodes before sending, and the API refuses anything
  * still too big rather than letting Firestore reject it with a worse message.
+ *
+ * That cap is also the ceiling on quality: several pictures in one report
+ * share the megabyte between them. Sending artwork at full resolution would
+ * mean moving to Storage.
  */
 export async function createReport(report) {
   if (!usingFirestore) throw new Error('Cannot save reports without Firestore.');

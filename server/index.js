@@ -328,12 +328,18 @@ app.post('/api/admin/seed', requireAdmin, async (_req, res, next) => {
 
 /* ── Reports: bugs and feature requests ───────────────────── */
 
-// A screenshot arrives as a data URL, so this route alone needs a body limit
-// far above the 16kb the rest of the API uses. Mounted here rather than
-// globally, so nothing else gains a 2MB attack surface.
+// Pictures arrive as data URLs, so this route alone needs a body limit far
+// above the 16kb the rest of the API uses. Mounted here rather than globally,
+// so nothing else gains a 2MB attack surface.
 const bigJson = express.json({ limit: '2mb' });
 
-const MAX_SHOT = 1_200_000;   // Firestore caps a document at 1MB; leave headroom
+const MAX_SHOTS = 6;
+// The whole report is one Firestore document and a document caps at 1MB, so
+// what matters is the pictures added together, not any one of them. The
+// browser divides this between however many are attached before encoding.
+const MAX_SHOT_TOTAL = 1_000_000;
+
+const isImageDataUrl = (s) => /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(s);
 
 app.post('/api/admin/reports', requireAdmin, bigJson, limit(30, 60_000), async (req, res, next) => {
   try {
@@ -341,21 +347,28 @@ app.post('/api/admin/reports', requireAdmin, bigJson, limit(30, 60_000), async (
     const kind = ['bug', 'feature'].includes(req.body?.kind) ? req.body.kind : 'bug';
     const from = str(req.body?.from, 60);
     const page = str(req.body?.page, 300);
-    const shot = typeof req.body?.shot === 'string' ? req.body.shot : '';
+
+    // `shot` is still read because a cached copy of the old admin page posts
+    // one picture under that name, and it should not start failing.
+    const shots = (Array.isArray(req.body?.shots) ? req.body.shots : [req.body?.shot])
+      .filter((s) => typeof s === 'string' && s);
 
     if (!body) return res.status(400).json({ error: 'Say what happened before sending it.' });
 
-    // Only ever accept an image data URL. Anything else is either a mistake or
-    // an attempt to store something that will later be served back to a browser.
-    if (shot && !/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(shot)) {
-      return res.status(400).json({ error: 'That attachment is not an image.' });
+    if (shots.length > MAX_SHOTS) {
+      return res.status(400).json({ error: `A report holds ${MAX_SHOTS} pictures. Send the rest as a second one.` });
     }
-    if (shot.length > MAX_SHOT) {
-      return res.status(413).json({ error: 'That screenshot is too large even after resizing. Crop it and try again.' });
+    // Only ever accept image data URLs. Anything else is either a mistake or
+    // an attempt to store something that will later be served back to a browser.
+    if (!shots.every(isImageDataUrl)) {
+      return res.status(400).json({ error: 'One of those attachments is not an image.' });
+    }
+    if (shots.reduce((n, s) => n + s.length, 0) > MAX_SHOT_TOTAL) {
+      return res.status(413).json({ error: 'Those pictures are too large even after resizing. Send fewer at once, or crop them.' });
     }
 
     const id = await createReport({
-      kind, body, from, page, shot: shot || null,
+      kind, body, from, page, shots,
       status: 'open',
       createdAt: new Date().toISOString()
     });

@@ -390,8 +390,46 @@ a { color: inherit; }
   transform-origin: 50% 100%;
   transition: transform 0.45s var(--ease);
 }
-.door:hover, .door:focus-visible { border-color: var(--accent); color: var(--on-accent); }
-.door:hover .door__flood, .door:focus-visible .door__flood { transform: scaleY(1); }
+/* :active is in here for the touch case — a tap produces no hover, and the
+   door is a link, so the page moves before anything else could show. */
+.door:hover, .door:focus-visible, .door:active { border-color: var(--accent); color: var(--on-accent); }
+.door:hover .door__flood,
+.door:focus-visible .door__flood,
+.door:active .door__flood { transform: scaleY(1); }
+
+/* On a touch screen there is no hover at all, so the flood is never seen and
+   the three doors read as identical grey boxes — which is what was reported,
+   twice. A resting band along the bottom edge is the starting position; app.js
+   then adds data-risen as each door scrolls into view, so the colour performs
+   the same rise a mouse would trigger. Reported as "the tabs aren't rising",
+   and they were not, because the artist works from a phone. */
+@media (hover: none) {
+  .door { border-color: color-mix(in srgb, var(--accent) 45%, var(--line-2)); }
+  .door::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 5px;
+    background: var(--accent);
+    transition: opacity 0.3s var(--ease);
+  }
+  .door:active::after { opacity: 0; }
+
+  /* Staggered so the three read as a sequence rather than one block flip. */
+  .door[data-risen] .door__flood { transform: scaleY(1); }
+  .door[data-risen] { color: var(--on-accent); border-color: var(--accent); }
+  .door[data-risen]::after { opacity: 0; }
+  .door--music[data-risen]  .door__flood { transition-delay: 0ms; }
+  .door--art[data-risen]    .door__flood { transition-delay: 110ms; }
+  .door--events[data-risen] .door__flood { transition-delay: 220ms; }
+}
+
+/* Someone who has asked for less motion still gets the colour, without the
+   sweep — the information is the colour, not the movement. */
+@media (hover: none) and (prefers-reduced-motion: reduce) {
+  .door__flood { transition: none; }
+  .door[data-risen] .door__flood { transition-delay: 0ms; }
+}
 
 .door__name {
   writing-mode: vertical-rl;
@@ -1310,6 +1348,12 @@ a { color: inherit; }
    target, hence the reset plus a zoom cursor and a lift on hover. */
 .zoom {
   display: block;
+  /* width has to be stated. A button sizes to its content even at display:
+     block, and the image inside is width: 100% — so the two resolve each other
+     down to the image's 2px border and the thumbnail becomes untappable. The
+     hero had its own override and the detail strip did not, which is exactly
+     how it went unnoticed. */
+  width: 100%;
   padding: 0;
   border: 0;
   background: none;
@@ -1324,7 +1368,6 @@ a { color: inherit; }
   outline: 2px solid var(--yellow);
   outline-offset: 3px;
 }
-.feature__hero .zoom { width: 100%; }
 
 .viewer {
   width: min(94vw, 1100px);

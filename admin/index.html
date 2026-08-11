@@ -92,8 +92,21 @@
                font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
   .rep .hint { margin: 0.4rem 0 0; font-size: 0.8rem; color: var(--muted); }
   .rep :focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
-  #rep-preview img { max-width: min(100%, 320px); height: auto; display: block;
-                     border: 1px solid var(--line-2); border-radius: var(--radius); margin-bottom: 0.5rem; }
+  .shots { display: grid; gap: 0.6rem; margin: 0; padding: 0; list-style: none;
+           grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr)); }
+  .shots li { position: relative; }
+  .shots img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover;
+               border: 1px solid var(--line-2); border-radius: var(--radius); }
+  .shot-drop {
+    position: absolute; top: 0.3rem; right: 0.3rem;
+    min-width: 1.75rem; min-height: 1.75rem; padding: 0;
+    border: 1px solid var(--line-2); border-radius: 999px;
+    background: rgb(0 0 0 / 0.72); color: #fff; font-size: 0.85rem; line-height: 1; cursor: pointer;
+  }
+  .shot-drop:hover { background: rgb(0 0 0 / 0.9); }
+  .shot-drop:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
+
+  .shot-cell { display: flex; flex-wrap: wrap; gap: 0.35rem; }
   .shot-link { padding: 0; border: 0; background: none; cursor: zoom-in; display: block; }
   .shot-link[data-big="true"] { cursor: zoom-out; }
   .shot-link img { max-width: 90px; height: auto; border: 1px solid var(--line); border-radius: 4px; display: block; transition: max-width 0.2s ease; }
@@ -203,14 +216,16 @@
             placeholder="What you expected, what happened instead, and where."></textarea>
         </div>
         <div class="field">
-          <label for="rep-shot">Screenshot</label>
-          <input id="rep-shot" type="file" accept="image/*">
-          <p class="hint" id="rep-hint">Or press Ctrl+V anywhere on this page to paste one straight from the clipboard. Large images are shrunk before sending.</p>
+          <label for="rep-shot">Pictures</label>
+          <input id="rep-shot" type="file" accept="image/*" multiple aria-describedby="rep-hint">
+          <p class="hint" id="rep-hint">
+            Up to six, screenshots or photos. Or press Ctrl+V anywhere on this page
+            to paste one straight from the clipboard. They are shrunk to fit one
+            report between them, so fewer pictures means sharper ones.
+          </p>
         </div>
-        <div id="rep-preview" hidden>
-          <img id="rep-thumb" alt="Screenshot to be attached">
-          <button class="linkish" type="button" id="rep-drop">Remove screenshot</button>
-        </div>
+        <ul class="shots" id="rep-preview" aria-label="Pictures to be attached" hidden></ul>
+        <p class="hint" id="rep-count" role="status" aria-live="polite"></p>
         <p class="msg" id="rep-msg" role="status" aria-live="polite"></p>
         <button class="btn btn--primary" type="submit" id="rep-send">Send it</button>
       </form>
@@ -221,7 +236,7 @@
         <caption>Newest first. Mark one done when it is dealt with, or delete it entirely.</caption>
         <thead><tr>
           <th scope="col">When</th><th scope="col">Type</th><th scope="col">From</th>
-          <th scope="col">What</th><th scope="col">Shot</th><th scope="col"><span class="visually-hidden">Actions</span></th>
+          <th scope="col">What</th><th scope="col">Pictures</th><th scope="col"><span class="visually-hidden">Actions</span></th>
         </tr></thead>
         <tbody id="tb-reports"></tbody>
       </table>
@@ -407,69 +422,110 @@
 
   /* ── Reports ─────────────────────────────────────────────── */
 
-  let pendingShot = null;
+  const MAX_SHOTS = 6;
+  // Everything in one report — the text and every picture — has to fit inside
+  // a single Firestore document, which caps at 1 MB. So the pictures share a
+  // budget rather than each having one, and six of them are each a sixth as
+  // sharp as one on its own would be.
+  const SHOT_BUDGET = 950_000;
+
+  // The originals are kept and only encoded at send time, because the budget
+  // each one gets is not known until you know how many there are.
+  let pending = [];
+
+  function drawPending() {
+    const list = $('#rep-preview');
+    list.innerHTML = pending.map((p, i) => `
+      <li>
+        <img src="${esc(p.url)}" alt="${esc(p.file.name || `Picture ${i + 1}`)}">
+        <button class="shot-drop" type="button" data-drop="${i}"
+                aria-label="Remove ${esc(p.file.name || `picture ${i + 1}`)}">✕</button>
+      </li>`).join('');
+    list.hidden = pending.length === 0;
+    $('#rep-count').textContent = pending.length
+      ? `${pending.length} of ${MAX_SHOTS} attached.`
+      : '';
+  }
+
+  function addFiles(files) {
+    const msg = $('#rep-msg');
+    const images = [...files].filter((f) => f.type.startsWith('image/'));
+    if (!images.length) return;
+
+    const room = MAX_SHOTS - pending.length;
+    if (room <= 0) {
+      msg.dataset.state = 'error';
+      msg.textContent = `A report holds ${MAX_SHOTS} pictures. Remove one, or send the rest as a second report.`;
+      return;
+    }
+
+    for (const file of images.slice(0, room)) {
+      pending.push({ file, url: URL.createObjectURL(file) });
+    }
+    msg.dataset.state = images.length > room ? 'error' : '';
+    msg.textContent = images.length > room
+      ? `Added ${room}. A report holds ${MAX_SHOTS} pictures, so the rest were left out.`
+      : '';
+    drawPending();
+  }
+
+  function clearPending() {
+    for (const p of pending) URL.revokeObjectURL(p.url);
+    pending = [];
+    $('#rep-shot').value = '';
+    drawPending();
+  }
 
   /**
-   * Shrink and re-encode before sending. A phone screenshot is often 3-6 MB,
-   * and the whole report has to fit inside one Firestore document (1 MB), so
-   * this is not an optimisation — without it nothing sends at all.
-   * Steps down the quality until it fits rather than guessing once.
+   * Shrink and re-encode before sending. A phone picture is often 3-6 MB and
+   * the report has to fit in one document, so this is not an optimisation —
+   * without it nothing sends at all. Steps the dimensions down and then the
+   * quality, rather than guessing once, because a tight budget shared between
+   * six pictures cannot be met by quality alone.
    */
-  async function shrink(file) {
+  async function encode(file, budget) {
     const bitmap = await createImageBitmap(file);
-    const scale = Math.min(1, 1400 / Math.max(bitmap.width, bitmap.height));
-    const w = Math.round(bitmap.width * scale);
-    const h = Math.round(bitmap.height * scale);
-
     const canvas = document.createElement('canvas');
-    canvas.width = w; canvas.height = h;
-    canvas.getContext('2d').drawImage(bitmap, 0, 0, w, h);
-    bitmap.close?.();
-
-    for (const q of [0.75, 0.6, 0.45, 0.3]) {
-      const url = canvas.toDataURL('image/jpeg', q);
-      if (url.length <= 1_100_000) return url;
-    }
-    return null;   // still too big: a very large, very detailed screenshot
-  }
-
-  async function attach(file) {
-    const msg = $('#rep-msg');
-    if (!file || !file.type.startsWith('image/')) return;
-    msg.textContent = 'Processing the image…';
-    msg.dataset.state = '';
+    const ctx = canvas.getContext('2d');
     try {
-      const url = await shrink(file);
-      if (!url) {
-        msg.textContent = 'That image is too big even after shrinking. Crop it and try again.';
-        msg.dataset.state = 'error';
-        return;
+      for (const edge of [1400, 1100, 900, 700, 540]) {
+        const scale = Math.min(1, edge / Math.max(bitmap.width, bitmap.height));
+        canvas.width = Math.round(bitmap.width * scale);
+        canvas.height = Math.round(bitmap.height * scale);
+        ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+        for (const q of [0.75, 0.6, 0.45, 0.3]) {
+          const url = canvas.toDataURL('image/jpeg', q);
+          if (url.length <= budget) return url;
+        }
       }
-      pendingShot = url;
-      $('#rep-thumb').src = url;
-      $('#rep-preview').hidden = false;
-      msg.textContent = '';
-    } catch {
-      msg.textContent = 'That file could not be read as an image.';
-      msg.dataset.state = 'error';
+      return null;   // still too big: very large and very detailed
+    } finally {
+      bitmap.close?.();
     }
   }
 
-  $('#rep-shot').addEventListener('change', (e) => attach(e.target.files?.[0]));
+  $('#rep-shot').addEventListener('change', (e) => addFiles(e.target.files ?? []));
 
-  $('#rep-drop').addEventListener('click', () => {
-    pendingShot = null;
-    $('#rep-preview').hidden = true;
+  $('#rep-preview').addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-drop]');
+    if (!btn) return;
+    const [gone] = pending.splice(Number(btn.dataset.drop), 1);
+    if (gone) URL.revokeObjectURL(gone.url);
+    // Clear the input too, or picking that same file again counts as no change
+    // and the change event never fires.
     $('#rep-shot').value = '';
-    $('#rep-msg').textContent = '';
+    drawPending();
   });
 
   // Paste straight from the clipboard — how a screenshot usually arrives.
   document.addEventListener('paste', (e) => {
-    const item = [...(e.clipboardData?.items ?? [])].find((i) => i.type.startsWith('image/'));
-    if (!item) return;
+    const files = [...(e.clipboardData?.items ?? [])]
+      .filter((i) => i.type.startsWith('image/'))
+      .map((i) => i.getAsFile())
+      .filter(Boolean);
+    if (!files.length) return;
     e.preventDefault();
-    attach(item.getAsFile());
+    addFiles(files);
   });
 
   $('#rep-form').addEventListener('submit', async (e) => {
@@ -487,9 +543,22 @@
 
     send.disabled = true;
     msg.dataset.state = '';
-    msg.textContent = 'Sending…';
+    msg.textContent = pending.length
+      ? `Preparing ${pending.length} picture${pending.length === 1 ? '' : 's'}…`
+      : 'Sending…';
 
     try {
+      const share = Math.floor(SHOT_BUDGET / Math.max(1, pending.length));
+      const shots = [];
+      for (const p of pending) {
+        const url = await encode(p.file, share);
+        if (!url) {
+          throw new Error(`${p.file.name || 'One picture'} will not shrink small enough to fit alongside the others. Crop it, or send fewer at once.`);
+        }
+        shots.push(url);
+      }
+
+      msg.textContent = 'Sending…';
       await api('/api/admin/reports', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -498,13 +567,13 @@
           from: $('#rep-from').value.trim(),
           body,
           page: location.href,
-          shot: pendingShot ?? ''
+          shots
         })
       });
       msg.dataset.state = '';
       msg.textContent = 'Sent. It shows up in the list below.';
       $('#rep-body').value = '';
-      $('#rep-drop').click();
+      clearPending();
       loadReports();
     } catch (err) {
       msg.dataset.state = 'error';
@@ -513,6 +582,10 @@
       send.disabled = false;
     }
   });
+
+  // Reports sent before this page could attach more than one picture hold a
+  // single `shot`, so read both shapes rather than migrating the collection.
+  const shotsOf = (r) => (r.shots?.length ? r.shots : r.shot ? [r.shot] : []);
 
   async function loadReports() {
     const tb = $('#tb-reports');
@@ -524,7 +597,11 @@
             <td>${r.kind === 'feature' ? 'Request' : 'Bug'}</td>
             <td>${esc(r.from || '—')}</td>
             <td class="rep-body">${esc(r.body)}</td>
-            <td>${r.shot ? `<button class="shot-link" type="button" data-zoom aria-label="Show this screenshot full size"><img src="${esc(r.shot)}" alt="Screenshot attached to this report"></button>` : '—'}</td>
+            <td>${shotsOf(r).length
+              ? `<div class="shot-cell">${shotsOf(r).map((s, i, all) =>
+                  `<button class="shot-link" type="button" data-zoom aria-label="Show picture ${i + 1} of ${all.length} full size"><img src="${esc(s)}" alt="Picture ${i + 1} of ${all.length} attached to this report"></button>`
+                ).join('')}</div>`
+              : '—'}</td>
             <td>
               <button class="linkish" type="button" data-done-id="${esc(r.id)}" data-to="${r.status === 'done' ? 'open' : 'done'}">${r.status === 'done' ? 'Reopen' : 'Done'}</button>
               <button class="linkish" type="button" data-del-id="${esc(r.id)}">Delete</button>

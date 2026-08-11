@@ -320,6 +320,37 @@ async function loadReleases() {
   }
 }
 
+/* ── Doors: make the colour rise where there is no hover ──── */
+
+/**
+ * Reported twice as "the three tabs still aren't rising with colour". They
+ * were not, and the code was correct: the rise is a :hover effect, and the
+ * artist works from a phone, where hover does not exist. Rather than leave a
+ * static band, trigger the same rise as each door scrolls into view.
+ *
+ * Only on hover-less pointers — a mouse user already has the real thing, and
+ * firing both would flip the door back to rest the moment they moved away.
+ */
+function doors() {
+  if (!window.matchMedia?.('(hover: none)').matches) return;
+  const list = $$('.door');
+  if (!list.length || !('IntersectionObserver' in window)) {
+    // No observer: show the colour rather than withhold it.
+    for (const d of list) d.dataset.risen = '';
+    return;
+  }
+
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (!e.isIntersecting) continue;
+      e.target.dataset.risen = '';
+      io.unobserve(e.target);   // rises once; it is not a scroll toy
+    }
+  }, { threshold: 0.35 });
+
+  for (const d of list) io.observe(d);
+}
+
 /* ── Image viewer ─────────────────────────────────────────── */
 
 /**
@@ -343,7 +374,17 @@ function viewer() {
     img.src = src;
     img.alt = alt ?? '';
     if (cap) cap.textContent = alt ?? '';
-    dialog.showModal();
+    // showModal only arrived in Safari 15.4. On an older phone it is either
+    // missing or throws, and the tap then does nothing at all — reported as
+    // "the pictures on the store can't be selected". Opening the file directly
+    // is a worse experience than the viewer, but an infinitely better one than
+    // a button that silently ignores you.
+    try {
+      if (typeof dialog.showModal === 'function') dialog.showModal();
+      else window.open(src, '_blank', 'noopener');
+    } catch {
+      window.open(src, '_blank', 'noopener');
+    }
   };
 
   for (const host of $$('[data-lightbox]')) {
@@ -353,7 +394,10 @@ function viewer() {
       btn.className = 'zoom';
       // The full-size file, not the thumbnail: srcset picks a small source for
       // a small box, and reusing that in the viewer would show a blurry image.
-      btn.dataset.full = thumb.dataset.full ?? thumb.currentSrc ?? thumb.src;
+      // || rather than ??: a lazy image that has not started loading reports
+      // currentSrc as an empty string, not null, and ?? kept that empty string
+      // — which is why three of the four detail views opened a blank viewer.
+      btn.dataset.full = thumb.dataset.full || thumb.currentSrc || thumb.src;
       btn.setAttribute('aria-label', `Enlarge: ${thumb.alt || 'artwork'}`);
       thumb.replaceWith(btn);
       btn.append(thumb);
@@ -587,6 +631,7 @@ chrome();
 topbar();
 platforms();
 rooms();
+doors();
 viewer();
 checkout();
 newsletter();
