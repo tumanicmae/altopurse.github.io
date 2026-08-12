@@ -353,11 +353,22 @@
 
     <h3 class="rule" id="forsale-h"><span>For sale</span></h3>
 
-    <div class="shop" id="shop" data-layout="feature" aria-labelledby="forsale-h">
+    <div class="shop" id="shop" aria-labelledby="forsale-h">
 
-      <!-- Feature piece. Written into the HTML so it renders with no JS and
-           with the backend asleep; app.js replaces it with live data when it can. -->
-      <article class="feature" data-artwork="tessellation-01">
+      <!-- Jump list. Filled by app.js only once the catalogue holds more than
+           one piece, so a no-JS visitor never meets an empty nav and a
+           one-piece shop never grows a pointless one. -->
+      <nav class="piece-index" id="piece-index" aria-label="Pieces" hidden></nav>
+
+      <!-- The pieces. The first is written into the HTML so the section
+           renders with no JS and with the backend asleep; app.js rebuilds this
+           list from the catalogue when it can. That rebuild is what makes a
+           second and third piece a data edit rather than a layout change —
+           and it leaves this markup alone if the catalogue cannot be reached,
+           because an empty Art section is worse than a stale one. -->
+      <div class="pieces" id="pieces">
+
+      <article class="feature" id="piece-tessellation-01" data-artwork="tessellation-01">
 
         <div class="feature__stage">
           <figure class="feature__hero" data-lightbox>
@@ -413,7 +424,7 @@
                 <span class="buy__name">The original</span>
                 <span class="buy__note">Unique canvas, signed on the reverse</span>
               </div>
-              <span class="buy__price" data-price="85000">£850</span>
+              <span class="buy__price" data-price="850000">£8,500</span>
               <button class="btn btn--buy" type="button" data-sku="TESS01-ORIG">Buy</button>
             </div>
             <div class="buy">
@@ -442,11 +453,14 @@
             </div>
           </div>
 
-          <p class="draft-note" id="draft-note">
-            Prices shown are drafts and will be confirmed before the shop opens.
+          <p class="draft-note" id="draft-note-tessellation-01">
+            The print prices are drafts and will be confirmed before the shop opens.
+            The price of the original is the artist's, and it is final.
           </p>
         </div>
       </article>
+
+      </div>
 
       <p class="shop__status" id="shop-status" role="status" aria-live="polite"></p>
     </div>

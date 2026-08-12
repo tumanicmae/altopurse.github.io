@@ -71,9 +71,9 @@ state rather than an error.
 
 ## Still needed from the artist
 
-- Prices for the original and each print size. Everything in
-  `data/artworks.json` is a **draft** and the page says so on the page.
-- The canvas's real dimensions, its title and the year.
+- Prices for each print size. The original is settled at £8,500, confirmed by
+  the artist on 11 August 2026; the print prices in `data/artworks.json` are
+  still **drafts** and the page says so on the page.
 - A contact email for commissions and receipts.
 - Which room each release belongs in — every `genre` in `data/releases.json`
   is `null`, so all four rooms are currently empty and the page says why.

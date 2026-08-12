@@ -234,7 +234,180 @@ async function loadShop() {
   }
 }
 
+/* ── Pieces: one artwork or fifteen, from the same catalogue ─
+   The Art section used to be a single hand-written piece. Everything below
+   builds that same block from the catalogue instead, so putting a second and
+   third canvas on the site is an edit to data/artworks.json rather than to
+   this file or to index.html.
+
+   Anything that reaches innerHTML here is escaped. The catalogue comes from
+   Firestore, which the artist can write to from /admin, so treating it as
+   trusted markup would be a stored-XSS hole in the one place a non-developer
+   types. ───────────────────────────────────────────────────── */
+
+const esc = (s) => String(s ?? '').replace(/[<>&"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]));
+
+const dayMonth = new Intl.DateTimeFormat(CFG.locale ?? 'en-GB', { day: 'numeric', month: 'long' });
+
+/** Local midnight, not UTC — `new Date('2026-07-29')` is UTC and lands on the
+ *  28th for anyone west of London. */
+function parseDay(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso ?? ''));
+  return m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : null;
+}
+
+/** "29 July – 1 August 2026", or one date, or the year, or nothing. */
+function painted(art) {
+  const tag = (iso, text) => `<time datetime="${esc(iso)}">${esc(text)}</time>`;
+  const from = parseDay(art.startedOn);
+  const to = parseDay(art.finishedOn);
+  if (from && to) return `${tag(art.startedOn, dayMonth.format(from))} – ${tag(art.finishedOn, longDate.format(to))}`;
+  if (to) return tag(art.finishedOn, longDate.format(to));
+  if (from) return tag(art.startedOn, longDate.format(from));
+  return art.year ? esc(String(art.year)) : '';
+}
+
+function specsHTML(art) {
+  const rows = [];
+  if (art.series) rows.push(['Series', esc(art.series)]);
+  const when = painted(art);
+  if (when) rows.push(['Painted', when]);
+  if (art.medium) rows.push(['Medium', esc(art.medium)]);
+
+  const d = art.dimensions;
+  rows.push(['Size', d?.width && d?.height
+    ? `${esc(d.width)} × ${esc(d.height)}&nbsp;${esc(d.unit ?? 'cm')}`
+    // Said plainly rather than left out. A missing row reads as an oversight;
+    // this reads as a fact nobody has measured yet, which is what it is.
+    : '<span class="specs__unknown">Not measured yet</span>']);
+
+  if (art.original?.editionOf === 1) rows.push(['Edition', 'Original, one of one']);
+  return rows.map(([k, v]) => `<div class="specs__row"><dt>${esc(k)}</dt><dd>${v}</dd></div>`).join('');
+}
+
+function buysHTML(art) {
+  const rows = [];
+  if (art.original?.sku) {
+    rows.push({
+      name: 'The original',
+      note: art.original.note ?? 'Unique canvas',
+      priceMinor: art.original.priceMinor,
+      sku: art.original.sku
+    });
+  }
+  for (const p of art.prints ?? []) {
+    if (!p.sku) continue;
+    rows.push({
+      name: `${p.size ?? 'Print'} print`,
+      note: [p.sizeNote, p.editionOf ? `edition of ${p.editionOf}` : null].filter(Boolean).join(' · '),
+      priceMinor: p.priceMinor,
+      sku: p.sku
+    });
+  }
+  if (!rows.length) return '';
+
+  return `<div class="buys" data-field="buys">${rows.map((r) => {
+    const minor = Number(r.priceMinor);
+    return `<div class="buy">
+        <div class="buy__what">
+          <span class="buy__name">${esc(r.name)}</span>
+          <span class="buy__note">${esc(r.note)}</span>
+        </div>
+        <span class="buy__price"${Number.isFinite(minor) ? ` data-price="${esc(minor)}"` : ''}>${
+          Number.isFinite(minor) ? esc(money.format(minor / 100)) : '<span class="specs__unknown">No price yet</span>'
+        }</span>
+        <button class="btn btn--buy" type="button" data-sku="${esc(r.sku)}">Buy</button>
+      </div>`;
+  }).join('')}</div>`;
+}
+
+/** Only says what is actually still a draft for this piece. */
+function draftNoteHTML(art) {
+  const origDraft = art.original?.draftPrice === true;
+  const printDraft = (art.prints ?? []).some((p) => p.draftPrice === true);
+  if (!origDraft && !printDraft) return '';
+  const text = origDraft && printDraft
+    ? 'These prices are drafts and will be confirmed before the shop opens.'
+    : origDraft
+      ? 'The price of the original is a draft and will be confirmed before the shop opens.'
+      : 'The print prices are drafts and will be confirmed before the shop opens. The price of the original is the artist’s, and it is final.';
+  return `<p class="draft-note" id="draft-note-${esc(art.id)}">${text}</p>`;
+}
+
+function stageHTML(art) {
+  const hero = art.images?.hero;
+  if (!hero?.webp) return '';
+
+  const srcset = [
+    hero.w320 ? `${hero.w320} 320w` : null,
+    hero.w640 ? `${hero.w640} 640w` : null,
+    hero.width ? `${hero.webp} ${hero.width}w` : null
+  ].filter(Boolean).join(', ');
+
+  const extras = [];
+  const insitu = art.images.insitu;
+  if (insitu?.webp) {
+    extras.push(`<li><img src="${esc(insitu.w400 ?? insitu.webp)}" data-full="${esc(insitu.webp)}" loading="lazy" decoding="async" alt="${esc(insitu.alt)}"></li>`);
+  }
+  for (const d of art.images.details ?? []) {
+    if (d?.webp) extras.push(`<li><img src="${esc(d.webp)}" loading="lazy" decoding="async" alt="${esc(d.alt)}"></li>`);
+  }
+
+  return `<div class="feature__stage">
+      <figure class="feature__hero" data-lightbox>
+        <img src="${esc(hero.webp)}"${srcset ? ` srcset="${esc(srcset)}"` : ''}
+             sizes="(min-width: 1180px) 36vw, (min-width: 900px) 44vw, 92vw"${
+               hero.width ? ` width="${esc(hero.width)}" height="${esc(hero.height ?? hero.width)}"` : ''}
+             decoding="async" data-full="${esc(hero.jpg ?? hero.webp)}" alt="${esc(hero.alt)}">
+        ${art.original?.editionOf === 1 ? '<figcaption class="feature__flag">One of one</figcaption>' : ''}
+      </figure>
+      ${extras.length ? `<ul class="strip" aria-label="Detail views" data-lightbox>${extras.join('')}</ul>` : ''}
+    </div>`;
+}
+
+function pieceHTML(art) {
+  const stage = stageHTML(art);
+  const paras = String(art.description ?? '')
+    .split(/\n{2,}/)
+    .map((p) => p.trim())
+    .filter(Boolean)
+    .map((p) => `<p class="feature__desc">${esc(p)}</p>`)
+    .join('');
+
+  return `<article class="feature${stage ? '' : ' feature--noshot'}" id="piece-${esc(art.id)}" data-artwork="${esc(art.id)}">
+      ${stage || '<p class="feature__noshot">This one has not been photographed yet.</p>'}
+      <div class="feature__body">
+        <h4 class="feature__title" data-field="title">${esc(art.title || 'Untitled')}</h4>
+        ${paras}
+        <dl class="specs" data-field="specs">${specsHTML(art)}</dl>
+        ${buysHTML(art)}
+        ${draftNoteHTML(art)}
+      </div>
+    </article>`;
+}
+
+function renderPieces() {
+  const host = $('#pieces');
+  // An empty catalogue means the fetch failed on both the API and the local
+  // JSON. index.html still holds the first piece, and a stale piece beats an
+  // empty Art section, so leave that markup exactly where it is.
+  if (!host || !state.artworks.length) return;
+
+  host.innerHTML = state.artworks.map(pieceHTML).join('');
+  wireZoom(host);
+
+  const nav = $('#piece-index');
+  if (!nav) return;
+  const many = state.artworks.length > 1;
+  nav.innerHTML = many
+    ? state.artworks.map((a) => `<a href="#piece-${esc(a.id)}">${esc(a.title || 'Untitled')}</a>`).join('')
+    : '';
+  nav.hidden = !many;
+}
+
 function applyShop({ live }) {
+  renderPieces();
+
   // Prices: format from minor units so the markup never carries a formatted string.
   for (const el of $$('[data-price]')) {
     const minor = Number(el.dataset.price);
@@ -244,14 +417,6 @@ function applyShop({ live }) {
   // The gateway counts are the artist's stated body of work, not the size of
   // this catalogue — 15 originals exist, one is photographed and for sale. They
   // are written in the HTML and deliberately not overwritten from here.
-
-  const draft = $('#draft-note');
-  if (draft) {
-    const anyDraft = state.artworks.some(
-      (a) => a.original?.draftPrice || (a.prints ?? []).some((p) => p.draftPrice)
-    );
-    draft.hidden = state.artworks.length > 0 && !anyDraft;
-  }
 
   const sold = new Set();
   // A draft price is a placeholder nobody has signed off. The server refuses
@@ -278,7 +443,11 @@ function applyShop({ live }) {
     if (draftSkus.has(btn.dataset.sku)) {
       btn.disabled = true;
       btn.textContent = 'Price to confirm';
-      btn.setAttribute('aria-describedby', 'draft-note');
+      // Each piece carries its own note, so the id has to be the piece's own.
+      // One shared #draft-note would be a duplicate id the moment a second
+      // canvas is listed, and aria-describedby would resolve to the wrong one.
+      const piece = btn.closest('[data-artwork]');
+      if (piece) btn.setAttribute('aria-describedby', `draft-note-${piece.dataset.artwork}`);
       continue;
     }
     if (live) {
@@ -359,33 +528,40 @@ function doors() {
  * they are reachable by Tab and announced as controls. The alt text does double
  * duty as the caption, which keeps one description in one place.
  */
-function viewer() {
+let zoomOpener = null;
+
+function openViewer(src, alt) {
   const dialog = $('#viewer');
   const img = $('#viewer-img');
   const cap = $('#viewer-cap');
   if (!dialog || !img) return;
 
-  let opener = null;
+  img.src = src;
+  img.alt = alt ?? '';
+  if (cap) cap.textContent = alt ?? '';
+  // showModal only arrived in Safari 15.4. On an older phone it is either
+  // missing or throws, and the tap then does nothing at all — reported as
+  // "the pictures on the store can't be selected". Opening the file directly
+  // is a worse experience than the viewer, but an infinitely better one than
+  // a button that silently ignores you.
+  try {
+    if (typeof dialog.showModal === 'function') dialog.showModal();
+    else window.open(src, '_blank', 'noopener');
+  } catch {
+    window.open(src, '_blank', 'noopener');
+  }
+}
 
-  const open = (src, alt) => {
-    img.src = src;
-    img.alt = alt ?? '';
-    if (cap) cap.textContent = alt ?? '';
-    // showModal only arrived in Safari 15.4. On an older phone it is either
-    // missing or throws, and the tap then does nothing at all — reported as
-    // "the pictures on the store can't be selected". Opening the file directly
-    // is a worse experience than the viewer, but an infinitely better one than
-    // a button that silently ignores you.
-    try {
-      if (typeof dialog.showModal === 'function') dialog.showModal();
-      else window.open(src, '_blank', 'noopener');
-    } catch {
-      window.open(src, '_blank', 'noopener');
-    }
-  };
-
-  for (const host of $$('[data-lightbox]')) {
+/**
+ * Wrap every lightbox image in a button. Called once at load and again each
+ * time the pieces are re-rendered, so it has to skip anything already wrapped
+ * — a second pass over the same image would nest a button inside a button,
+ * which is invalid and drops it out of the tab order.
+ */
+function wireZoom(root = document) {
+  for (const host of $$('[data-lightbox]', root)) {
     for (const thumb of $$('img', host)) {
+      if (thumb.closest('.zoom')) continue;
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'zoom';
@@ -399,11 +575,19 @@ function viewer() {
       thumb.replaceWith(btn);
       btn.append(thumb);
       btn.addEventListener('click', () => {
-        opener = btn;
-        open(btn.dataset.full, thumb.alt);
+        zoomOpener = btn;
+        openViewer(btn.dataset.full, thumb.alt);
       });
     }
   }
+}
+
+function viewer() {
+  const dialog = $('#viewer');
+  const img = $('#viewer-img');
+  if (!dialog || !img) return;
+
+  wireZoom();
 
   const close = () => dialog.close();
   $('#viewer-close')?.addEventListener('click', close);
@@ -422,8 +606,8 @@ function viewer() {
 
   dialog.addEventListener('close', () => {
     img.src = '';           // release the decoded image
-    const target = opener;
-    opener = null;
+    const target = zoomOpener;
+    zoomOpener = null;
     // Restore focus on the next frame. Calling focus() inside the close event
     // races the browser's own focus handling and loses — measured, not
     // guessed: focus stayed on the dialog's close button.

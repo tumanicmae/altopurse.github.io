@@ -929,6 +929,55 @@ a { color: inherit; }
   .feature__stage { position: sticky; top: 6rem; }
 }
 
+/* Several pieces, stacked. One piece looks exactly as it did before — the rule
+   and the space only exist between siblings, so nothing changes until there is
+   a second canvas to separate. */
+.pieces { display: grid; }
+.pieces .feature + .feature {
+  margin-top: clamp(2.5rem, 7vw, 5rem);
+  padding-top: clamp(2.5rem, 7vw, 5rem);
+  border-top: 1px solid var(--line);
+}
+
+/* A piece nobody has photographed yet. Stated rather than left blank, and the
+   body takes the full width instead of leaving a hole where the stage was.
+   After the two-column rule above, so it wins at every width. */
+.feature--noshot { grid-template-columns: minmax(0, 1fr); }
+.feature__noshot {
+  margin: 0;
+  padding: 1.1rem 1.25rem;
+  border: 1px dashed var(--line-2);
+  border-radius: var(--radius);
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+/* Jump list, shown only once there is more than one piece. Underlined at rest
+   rather than on hover — half the people reading this are on a phone, where
+   hover is not a state that happens. */
+.piece-index {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.25rem;
+  margin: 0 0 clamp(1.5rem, 4vw, 2.5rem);
+}
+.piece-index a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  border-bottom: 1px solid var(--line-2);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: color 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+.piece-index a:hover { color: var(--text); border-bottom-color: currentColor; }
+.piece-index a:focus-visible { outline: 2px solid var(--yellow); outline-offset: 3px; }
+
 .feature__hero {
   position: relative;
   margin: 0;

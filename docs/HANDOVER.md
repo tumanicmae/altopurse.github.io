@@ -128,7 +128,8 @@ would break the catalogue lookup for no visible gain.
 
 Sold as a one-of-one original plus A3/A2/A1 signed prints. Merch (hoodie, tee,
 flat peak) is modelled and rendered but switched off pending a print partner.
-All prices are drafts, flagged `draftPrice: true`, and the page says so.
+The original is £8,500, given by the artist on 11 August 2026. The print prices
+are still drafts, flagged `draftPrice: true`, and the page says so.
 
 Best available image resolution is ~1000 px square, cropped from a photo of the
 canvas against a car. A proper straight-on photo would lift the whole section.
@@ -198,7 +199,8 @@ but orders and analytics record nothing until
 
 ## Still unknown — ask the artist, never guess into the copy
 
-1. Real prices for the original and each print size. Still `draftPrice: true`.
+1. Real prices for each print size. Still `draftPrice: true`. The original is
+   settled at £8,500.
 2. Which room each of the six releases belongs to.
 3. The track **Primary Doubt** — bassline house, 127 BPM, made alongside the
    painting of the same name. Not one of the six listed releases. Unknown whether
