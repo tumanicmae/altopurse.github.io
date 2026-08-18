@@ -191,8 +191,14 @@ async function loadShop() {
       const combinedArt = localArt.map((l) => {
         const r = liveMap.get(l.id);
         if (!r) return l;
+        const orig = l.original ? {
+          ...l.original,
+          ...(r.original ? { available: r.original.available, priceMinor: r.original.priceMinor ?? l.original.priceMinor } : {})
+        } : r.original;
         return {
+          ...l,
           ...r,
+          original: orig,
           images: l.images ?? r.images,
           description: l.description ?? r.description,
           dimensions: l.dimensions ?? r.dimensions,
