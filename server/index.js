@@ -427,6 +427,14 @@ app.use((err, _req, res, _next) => {
 });
 
 await initDb();
+if (usingFirestore) {
+  try {
+    const res = await seedFromRepo();
+    console.log(`[db] Auto-seeded catalogue into Firestore on boot (${res.total} items).`);
+  } catch (err) {
+    console.error('[db] Auto-seed failed on boot:', err.message);
+  }
+}
 app.listen(PORT, () => {
   console.log(`[api] listening on ${PORT} — firestore=${usingFirestore}`);
 });

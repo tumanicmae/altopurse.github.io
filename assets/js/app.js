@@ -169,20 +169,39 @@ const state = { artworks: [], merch: [], online: false, reason: '' };
 async function loadShop() {
   const status = $('#shop-status');
 
+  // Load the local catalogue first so static assets/pieces are always known.
+  let localArt = [];
+  let localMerch = [];
+  try {
+    const [art, merch] = await Promise.all([
+      getJSON('data/artworks.json'),
+      getJSON('data/merch.json')
+    ]);
+    localArt = art.artworks ?? [];
+    localMerch = merch.products ?? [];
+  } catch {
+    // index.html holds the static fallback
+  }
+
   if (API) {
     try {
       const live = await getJSON(`${API}/api/artworks`);
-      state.artworks = live.artworks ?? [];
-      state.merch = live.products ?? [];
+      const liveMap = new Map((live.artworks ?? []).map((a) => [a.id, a]));
+      // Keep all local pieces, overlaying live Firestore state if present
+      const combinedArt = localArt.map((l) => {
+        const r = liveMap.get(l.id);
+        return r ? { ...l, ...r } : l;
+      });
+      // Append any live pieces not in local
+      const localIds = new Set(localArt.map((a) => a.id));
+      for (const a of (live.artworks ?? [])) {
+        if (!localIds.has(a.id)) combinedArt.push(a);
+      }
+      state.artworks = combinedArt.length > 0 ? combinedArt : (live.artworks ?? localArt);
+      state.merch = (live.products && live.products.length > 0) ? live.products : localMerch;
       state.online = true;
 
-      // Checkout needs a database that is both connected and stocked. Either
-      // half can be missing: with no service account the catalogue falls back
-      // to `source: 'repo'`, and a connected but unseeded Firestore answers
-      // `firestore` with nothing in it. Both refuse the order at the last
-      // step — one with "cannot be recorded", one with "not for sale" — so
-      // both have to keep checkout shut rather than walk someone through a
-      // delivery address that leads nowhere.
+      // Checkout needs a database that is both connected and stocked.
       const canCheckout = live.source === 'firestore' && state.artworks.length > 0;
       applyShop({ live: canCheckout });
 
@@ -190,7 +209,7 @@ async function loadShop() {
         status.textContent = 'The shop is not open yet. Everything here is real, but you cannot check out.';
       } else if (canCheckout && status) {
         const allDraft = state.artworks.every(
-          (a) => a.original?.draftPrice && (a.prints ?? []).every((p) => p.draftPrice)
+          (a) => (a.original?.draftPrice || a.original?.inquireOnly) && (a.prints ?? []).every((p) => p.draftPrice)
         );
         status.textContent = allDraft
           ? 'Prices are still being finalised, so nothing can be bought just yet. Join the list below and you will know first.'
@@ -204,18 +223,8 @@ async function loadShop() {
     state.reason = 'not-configured';
   }
 
-  // Fall back to what ships with the page.
-  try {
-    const [art, merch] = await Promise.all([
-      getJSON('data/artworks.json'),
-      getJSON('data/merch.json')
-    ]);
-    state.artworks = art.artworks ?? [];
-    state.merch = merch.products ?? [];
-  } catch {
-    // The HTML already holds the feature piece, so there is nothing to repair.
-  }
-
+  state.artworks = localArt;
+  state.merch = localMerch;
   applyShop({ live: false });
 
   if (status) {
