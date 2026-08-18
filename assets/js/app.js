@@ -187,10 +187,17 @@ async function loadShop() {
     try {
       const live = await getJSON(`${API}/api/artworks`);
       const liveMap = new Map((live.artworks ?? []).map((a) => [a.id, a]));
-      // Keep all local pieces, overlaying live Firestore state if present
+      // Keep all local pieces, overlaying live Firestore state (pricing/availability)
       const combinedArt = localArt.map((l) => {
         const r = liveMap.get(l.id);
-        return r ? { ...l, ...r } : l;
+        if (!r) return l;
+        return {
+          ...r,
+          images: l.images ?? r.images,
+          description: l.description ?? r.description,
+          dimensions: l.dimensions ?? r.dimensions,
+          series: l.series ?? r.series
+        };
       });
       // Append any live pieces not in local
       const localIds = new Set(localArt.map((a) => a.id));
