@@ -114,9 +114,9 @@ Two pieces in the catalogue:
    - Physical Price Tag: Green leather New Testament Bible with cut window showing 3 torn pages, adhered cardboard painted "£25,000,000" in red acrylic.
    - Store Display Rule: Original only (1 of 1, no prints). The price is **not** displayed on the store; instead it directs visitors to email Jamie (`tumanicmae@gmail.com`) for pricing inquiries.
 
-2. **Primary Doubt**, Void Series, acrylic on canvas, 100 × 100 cm, painted 29 July – 1 August 2026. Title, dates and dimensions confirmed by the artist on 2 August 2026.
+2. **Primary Doubt**, Primary Doubt Series, acrylic on canvas, 100 × 100 cm, painted 29 July – 1 August 2026. Title, dates, edition (2 of 3), and dimensions confirmed by the artist.
    - Process: Ruled out in pencil into 3D triangles and freemasonry symbolism, canvas turned upside down before paint. The third eye sits in the bottom right corner (black and white).
-   - Sold as a one-of-one original (£8,500) plus signed A3/A2/A1 prints (draft pricing).
+   - Sold as: Original canvas (£8,500, marked 2 of 3 in the series) plus signed A3/A2/A1 prints (draft pricing).
    - Photos: Exactly 3 official photos on the website:
      1. Square cropped canvas (`canvas-full.webp` / `.jpg`)
      2. Doorstep context view (`canvas-insitu.webp` / `canvas-insitu-400.webp`)

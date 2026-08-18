@@ -297,7 +297,13 @@ function specsHTML(art) {
     // this reads as a fact nobody has measured yet, which is what it is.
     : '<span class="specs__unknown">Not measured yet</span>']);
 
-  if (art.original?.editionOf === 1) rows.push(['Edition', 'Original, one of one']);
+  if (art.original?.editionText) {
+    rows.push(['Edition', esc(art.original.editionText)]);
+  } else if (art.original?.editionNumber && art.original?.editionOf) {
+    rows.push(['Edition', `Original, ${esc(art.original.editionNumber)} of ${esc(art.original.editionOf)}`]);
+  } else if (art.original?.editionOf === 1) {
+    rows.push(['Edition', 'Original, one of one']);
+  }
   return rows.map(([k, v]) => `<div class="specs__row"><dt>${esc(k)}</dt><dd>${v}</dd></div>`).join('');
 }
 
@@ -389,7 +395,7 @@ function stageHTML(art) {
              sizes="(min-width: 1180px) 36vw, (min-width: 900px) 44vw, 92vw"${
                hero.width ? ` width="${esc(hero.width)}" height="${esc(hero.height ?? hero.width)}"` : ''}
              decoding="async" data-full="${esc(hero.jpg ?? hero.webp)}" alt="${esc(hero.alt)}">
-        ${art.original?.editionOf === 1 ? '<figcaption class="feature__flag">One of one</figcaption>' : ''}
+        ${(art.original?.editionNumber && art.original?.editionOf) ? `<figcaption class="feature__flag">${esc(art.original.editionNumber)} of ${esc(art.original.editionOf)}</figcaption>` : art.original?.editionOf === 1 ? '<figcaption class="feature__flag">One of one</figcaption>' : ''}
       </figure>
       ${extras.length ? `<ul class="strip" aria-label="Detail views" data-lightbox>${extras.join('')}</ul>` : ''}
     </div>`;

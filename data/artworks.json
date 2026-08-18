@@ -8,7 +8,7 @@
       "id": "tessellation-01",
       "$idNote": "The id and the TESS01 SKUs predate the title and are internal only — nothing a visitor sees. Renaming them would break the catalogue lookup for no visible gain.",
       "title": "Primary Doubt",
-      "series": "Void Series",
+      "series": "Primary Doubt Series",
       "year": 2026,
       "startedOn": "2026-07-29",
       "finishedOn": "2026-08-01",
@@ -44,8 +44,10 @@
       "original": {
         "sku": "TESS01-ORIG",
         "$noteNote": "Shown under the buy row. Optional — a piece without one falls back to 'Unique canvas', because 'signed on the reverse' is not true of every canvas.",
-        "note": "Unique canvas, signed on the reverse",
-        "editionOf": 1,
+        "note": "Original canvas, 2 of 3 in the series, signed on the reverse",
+        "editionNumber": 2,
+        "editionOf": 3,
+        "editionText": "Original, 2 of 3",
         "available": true,
         "priceMinor": 850000,
         "draftPrice": false
