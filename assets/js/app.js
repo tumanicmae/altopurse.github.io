@@ -292,6 +292,7 @@ function buysHTML(art) {
       name: 'The original',
       note: art.original.note ?? 'Unique canvas',
       priceMinor: art.original.priceMinor,
+      inquireOnly: art.original.inquireOnly === true,
       sku: art.original.sku
     });
   }
@@ -301,12 +302,25 @@ function buysHTML(art) {
       name: `${p.size ?? 'Print'} print`,
       note: [p.sizeNote, p.editionOf ? `edition of ${p.editionOf}` : null].filter(Boolean).join(' · '),
       priceMinor: p.priceMinor,
+      inquireOnly: p.inquireOnly === true,
       sku: p.sku
     });
   }
   if (!rows.length) return '';
 
   return `<div class="buys" data-field="buys">${rows.map((r) => {
+    if (r.inquireOnly) {
+      const subject = encodeURIComponent(`Enquiry regarding ${art.title || 'the original canvas'}`);
+      const mailto = `mailto:${CFG.contactEmail || 'tumanicmae@gmail.com'}?subject=${subject}`;
+      return `<div class="buy">
+          <div class="buy__what">
+            <span class="buy__name">${esc(r.name)}</span>
+            <span class="buy__note">${esc(r.note)}</span>
+          </div>
+          <span class="buy__price">Price on enquiry</span>
+          <a class="btn btn--buy" href="${mailto}">Enquire</a>
+        </div>`;
+    }
     const minor = Number(r.priceMinor);
     return `<div class="buy">
         <div class="buy__what">
@@ -433,6 +447,7 @@ function applyShop({ live }) {
   }
 
   for (const btn of $$('.btn--buy')) {
+    if (!btn.dataset.sku) continue;
     const row = btn.closest('.buy');
     if (sold.has(btn.dataset.sku)) {
       btn.disabled = true;

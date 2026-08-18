@@ -107,32 +107,19 @@ do not fabricate them.
 
 ## Art
 
-One piece: **Primary Doubt**, Void Series, acrylic on canvas, 100 × 100 cm,
-painted 29 July – 1 August 2026. Title, dates and dimensions confirmed by the
-artist on 2 August 2026 — they are facts now, not placeholders.
+Two pieces in the catalogue:
 
-Process, in his account: ruled out in pencil into 3D triangles and freemasonry
-symbolism, then the canvas turned upside down before any paint went on. The
-subject is doubt — the thought that arrives at every step of making something
-and of living with bipolar — answered with persistence and colour coordination.
-The bipolar reference is the artist's own disclosure about his own work; keep it
-only while he wants it there.
+1. **Your Money Is Mine** (25 Milli piece), Void Series / 90s Cubism, acrylic on canvas with integrated Bible price tag, 100 × 100 cm, painted 7 March – 28 November 2024. Provenance and dates authenticated on a signed sheet by Mr Jamie V. Heap.
+   - Process & Symbolism: Commences with drink thrown on canvas, 3D triangles, 3-6-9 pattern, Masonic eye in hands / dark navy into black ("hiding in plain sight"), 90s Cubism / Nintendo 64 chromatic palette.
+   - Physical Price Tag: Green leather New Testament Bible with cut window showing 3 torn pages, adhered cardboard painted "£25,000,000" in red acrylic.
+   - Store Display Rule: Original only (1 of 1, no prints). The price is **not** displayed on the store; instead it directs visitors to email Jamie (`tumanicmae@gmail.com`) for pricing inquiries.
 
-The series statement above the piece is separate and older, still in his words.
-The black-and-white motif bottom right is **the third eye** — an earlier version
-wrongly called it a flame; do not reintroduce that.
+2. **Primary Doubt**, Void Series, acrylic on canvas, 100 × 100 cm, painted 29 July – 1 August 2026. Title, dates and dimensions confirmed by the artist on 2 August 2026.
+   - Process: Ruled out in pencil into 3D triangles and freemasonry symbolism, canvas turned upside down before paint. The third eye sits in the bottom right corner (black and white).
+   - Sold as a one-of-one original (£8,500) plus signed A3/A2/A1 prints (draft pricing).
+   - Photos: Updated to a clean high-resolution straight-on photograph taken on the doorstep.
 
-The artwork `id` is still `tessellation-01` and the SKUs still `TESS01-*`. Those
-predate the title, are internal, and are never shown to a visitor — renaming them
-would break the catalogue lookup for no visible gain.
-
-Sold as a one-of-one original plus A3/A2/A1 signed prints. Merch (hoodie, tee,
-flat peak) is modelled and rendered but switched off pending a print partner.
-The original is £8,500, given by the artist on 11 August 2026. The print prices
-are still drafts, flagged `draftPrice: true`, and the page says so.
-
-Best available image resolution is ~1000 px square, cropped from a photo of the
-canvas against a car. A proper straight-on photo would lift the whole section.
+The artwork `id`s are `your-money-is-mine` (SKU `YMM01-ORIG`) and `tessellation-01` (SKUs `TESS01-*`).
 
 ## Analytics — read before changing anything
 

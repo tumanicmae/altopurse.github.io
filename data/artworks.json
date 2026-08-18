@@ -5,6 +5,53 @@
   "pricesAreDraft": true,
   "artworks": [
     {
+      "id": "your-money-is-mine",
+      "title": "Your Money Is Mine",
+      "series": "Void Series / 90s Cubism",
+      "year": 2024,
+      "startedOn": "2024-03-07",
+      "finishedOn": "2024-11-28",
+      "medium": "Acrylic on canvas with integrated Bible price tag",
+      "dimensions": {
+        "width": 100,
+        "height": 100,
+        "unit": "cm"
+      },
+      "description": "Conceived and executed meter-by-meter through a disciplined, process-led approach. The work commences with an act of disruption: a drink is thrown onto a blank canvas ground. From that initial incursion, the painting proceeds into “the void” via an instinctive gesture — placing the pencil behind the artist without looking — after which the composition unfolds organically from that point of origin.\n\nThe piece bears layered symbolism alongside a clear geometric resolve. Freemasonry is referenced through emblematic motifs including eyes in the hands, as well as through effects of concealment. Dark navy is employed to sink into black, creating the sense of hiding within the black — an idea of watchful, controlled visibility: hiding in plain sight. Black, white and sky blue establish a tonal harmony that resonates with Masonic ceremonial design.\n\nThroughout the surface, the numbers 3, 6 and 9 are scattered as markers of universal pattern and cosmic recurrence. Central to the construction are classic 3D triangular forms, presented as both spiritual geometry and an enduring obsession. Characterised as “90s cubism” — a reframing of Cubist fracture through a 1990s sensibility — the lower-left chromatic palette is rendered using the colour family of the Nintendo 64 logo.\n\nThe artwork’s value is made physical through an integrated price tag: constructed from a pocket-sized green leather New Testament Bible with three pages torn out and fixed behind a cut window, with cardboard adhered to the front and the price £25,000,000 painted in red acrylic. Accompanied by a one-off hand-signed authentication certificate.",
+      "images": {
+        "hero": {
+          "webp": "assets/art/your-money-is-mine.webp",
+          "jpg": "assets/art/your-money-is-mine.jpg",
+          "w640": "assets/art/your-money-is-mine-640.webp",
+          "w320": "assets/art/your-money-is-mine-320.webp",
+          "width": 1000,
+          "height": 1546,
+          "alt": "An acrylic canvas of 90s Cubism featuring 3D geometric triangles in slate, grey and sky blue, with eyes in hands, Masonic concealment in navy and black, and Nintendo 64 chromatic elements in the lower corner."
+        },
+        "insitu": {
+          "webp": "assets/art/your-money-is-mine-insitu.webp",
+          "alt": "The canvas hanging on a studio wall above the handwritten inscription 'I WILL ONLY CONFORM TO MY OWN CREATIVITY... MAYBE'."
+        },
+        "details": [
+          {
+            "webp": "assets/art/your-money-is-mine-cert.webp",
+            "alt": "The handwritten authentication sheet signed by Mr Jamie V. Heap stating start date 07/03/2024, finish date 28/11/2024, and title YOUR MONEY IS MINE."
+          }
+        ]
+      },
+      "original": {
+        "sku": "YMM01-ORIG",
+        "note": "Unique canvas with physical Bible price tag, signed certificate",
+        "editionOf": 1,
+        "available": true,
+        "inquireOnly": true,
+        "priceMinor": null,
+        "draftPrice": false
+      },
+      "prints": [],
+      "merch": []
+    },
+    {
       "id": "tessellation-01",
       "$idNote": "The id and the TESS01 SKUs predate the title and are internal only — nothing a visitor sees. Renaming them would break the catalogue lookup for no visible gain.",
       "title": "Primary Doubt",
@@ -13,15 +60,40 @@
       "startedOn": "2026-07-29",
       "finishedOn": "2026-08-01",
       "medium": "Acrylic on canvas",
-      "dimensions": { "width": 100, "height": 100, "unit": "cm" },
+      "dimensions": {
+        "width": 100,
+        "height": 100,
+        "unit": "cm"
+      },
       "description": "Coordinates set blind, then ruled out in pencil — 3D triangles and freemasonry symbolism drawn edge to edge — and the canvas turned upside down before any paint went on. Flat acrylic, no gradients, every edge painted to a line. Red, cobalt and yellow carry the grid; magenta, purple and orange break it. The third eye sits in the bottom right corner, worked in black and white, the one place the colour stops.\n\nThe subject is doubt: the thought that arrives at every step of making something, and at every step of living with bipolar. What the painting answers with is persistence — careful, correct colour coordination, and the determination to believe the work will be good.",
       "images": {
-        "hero": { "webp": "assets/art/canvas-full.webp", "jpg": "assets/art/canvas-full.jpg", "w640": "assets/art/canvas-full-640.webp", "w320": "assets/art/canvas-full-320.webp", "width": 1000, "height": 1000, "alt": "A square canvas covered edge to edge in ruled, flat-painted triangles — red, cobalt, yellow, green, magenta, purple and orange — repeating outward as a kaleidoscope, with a black-and-white third eye in the bottom right corner." },
-        "insitu": { "webp": "assets/art/canvas-insitu.webp", "w400": "assets/art/canvas-insitu-400.webp", "alt": "The same canvas hanging on a white studio wall, roughly as tall as the wall panel behind it, showing its scale." },
+        "hero": {
+          "webp": "assets/art/canvas-full.webp",
+          "jpg": "assets/art/canvas-full.jpg",
+          "w640": "assets/art/canvas-full-640.webp",
+          "w320": "assets/art/canvas-full-320.webp",
+          "width": 1000,
+          "height": 1000,
+          "alt": "A square canvas covered edge to edge in ruled, flat-painted triangles — red, cobalt, yellow, green, magenta, purple and orange — repeating outward as a kaleidoscope, with a black-and-white third eye in the bottom right corner."
+        },
+        "insitu": {
+          "webp": "assets/art/canvas-insitu.webp",
+          "w400": "assets/art/canvas-insitu-400.webp",
+          "alt": "The same canvas standing upright in front of a doorway, showing its scale."
+        },
         "details": [
-          { "webp": "assets/art/detail-fan.webp", "alt": "Close detail: a fan of cobalt and pale blue triangles opening into yellow and green." },
-          { "webp": "assets/art/detail-field.webp", "alt": "Close detail: the tessellation repeating, with smaller triangles nested inside the larger ones." },
-          { "webp": "assets/art/detail-third-eye.webp", "alt": "Close detail: the third eye in the bottom right corner, worked in black and white — the only part of the canvas without colour." }
+          {
+            "webp": "assets/art/detail-fan.webp",
+            "alt": "Close detail: a fan of cobalt and pale blue triangles opening into yellow and green."
+          },
+          {
+            "webp": "assets/art/detail-field.webp",
+            "alt": "Close detail: the tessellation repeating, with smaller triangles nested inside the larger ones."
+          },
+          {
+            "webp": "assets/art/detail-third-eye.webp",
+            "alt": "Close detail: the third eye in the bottom right corner, worked in black and white — the only part of the canvas without colour."
+          }
         ]
       },
       "original": {
@@ -34,11 +106,39 @@
         "draftPrice": false
       },
       "prints": [
-        { "sku": "TESS01-A3", "size": "A3", "sizeNote": "297 × 420 mm", "editionOf": 50, "priceMinor": 4500, "draftPrice": true, "available": true },
-        { "sku": "TESS01-A2", "size": "A2", "sizeNote": "420 × 594 mm", "editionOf": 25, "priceMinor": 7500, "draftPrice": true, "available": true },
-        { "sku": "TESS01-A1", "size": "A1", "sizeNote": "594 × 841 mm", "editionOf": 10, "priceMinor": 12000, "draftPrice": true, "available": true }
+        {
+          "sku": "TESS01-A3",
+          "size": "A3",
+          "sizeNote": "297 × 420 mm",
+          "editionOf": 50,
+          "priceMinor": 4500,
+          "draftPrice": true,
+          "available": true
+        },
+        {
+          "sku": "TESS01-A2",
+          "size": "A2",
+          "sizeNote": "420 × 594 mm",
+          "editionOf": 25,
+          "priceMinor": 7500,
+          "draftPrice": true,
+          "available": true
+        },
+        {
+          "sku": "TESS01-A1",
+          "size": "A1",
+          "sizeNote": "594 × 841 mm",
+          "editionOf": 10,
+          "priceMinor": 12000,
+          "draftPrice": true,
+          "available": true
+        }
       ],
-      "merch": ["hoodie", "tee", "flatpeak"]
+      "merch": [
+        "hoodie",
+        "tee",
+        "flatpeak"
+      ]
     }
   ]
 }
