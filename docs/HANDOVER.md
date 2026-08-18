@@ -117,7 +117,11 @@ Two pieces in the catalogue:
 2. **Primary Doubt**, Void Series, acrylic on canvas, 100 × 100 cm, painted 29 July – 1 August 2026. Title, dates and dimensions confirmed by the artist on 2 August 2026.
    - Process: Ruled out in pencil into 3D triangles and freemasonry symbolism, canvas turned upside down before paint. The third eye sits in the bottom right corner (black and white).
    - Sold as a one-of-one original (£8,500) plus signed A3/A2/A1 prints (draft pricing).
-   - Photos: Updated to a clean high-resolution straight-on photograph taken on the doorstep.
+   - Photos: Exactly 3 official photos on the website:
+     1. Square cropped canvas (`canvas-full.webp` / `.jpg`)
+     2. Doorstep context view (`canvas-insitu.webp` / `canvas-insitu-400.webp`)
+     3. Car context view (`canvas-car.webp` / `canvas-car-400.webp`)
+     No other fabricated detail crops are permitted.
 
 The artwork `id`s are `your-money-is-mine` (SKU `YMM01-ORIG`) and `tessellation-01` (SKUs `TESS01-*`).
 

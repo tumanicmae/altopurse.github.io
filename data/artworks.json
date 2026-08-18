@@ -79,20 +79,12 @@
         "insitu": {
           "webp": "assets/art/canvas-insitu.webp",
           "w400": "assets/art/canvas-insitu-400.webp",
-          "alt": "The same canvas standing upright in front of a doorway, showing its scale."
+          "alt": "The canvas standing upright on a doorstep showing its scale against the doorway."
         },
         "details": [
           {
-            "webp": "assets/art/detail-fan.webp",
-            "alt": "Close detail: a fan of cobalt and pale blue triangles opening into yellow and green."
-          },
-          {
-            "webp": "assets/art/detail-field.webp",
-            "alt": "Close detail: the tessellation repeating, with smaller triangles nested inside the larger ones."
-          },
-          {
-            "webp": "assets/art/detail-third-eye.webp",
-            "alt": "Close detail: the third eye in the bottom right corner, worked in black and white — the only part of the canvas without colour."
+            "webp": "assets/art/canvas-car.webp",
+            "alt": "The canvas standing outdoors in front of a car, showing its full square composition in daylight."
           }
         ]
       },
